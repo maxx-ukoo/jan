@@ -310,4 +310,10 @@ export default class JanProviderWeb extends AIEngine {
     console.log(`Checking tool support for Jan model ${modelId}: supported`);
     return true;
   }
+
+  async isEmbeddingsSupported(): Promise<boolean> {
+    // Embeddings are not yet supported
+    return false
+  }
+  
 }

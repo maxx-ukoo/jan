@@ -77,7 +77,7 @@ export class TauriProvidersService extends DefaultProvidersService {
             models.map(
               async (model) => {
                 let capabilities: string[] = []
-                
+
                 // Check for capabilities
                 if ('capabilities' in model) {
                   capabilities = model.capabilities as string[]
@@ -93,7 +93,7 @@ export class TauriProvidersService extends DefaultProvidersService {
                     // Continue without tool capabilities if check fails
                   }
                 }
-                
+
                 return {
                   id: model.id,
                   model: model.id,

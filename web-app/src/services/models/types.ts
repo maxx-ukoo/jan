@@ -123,6 +123,7 @@ export interface ModelsService {
     model: string
   ): Promise<SessionInfo | undefined>
   isToolSupported(modelId: string): Promise<boolean>
+  isEmbeddingsSupported(modelId: string): Promise<boolean>
   checkMmprojExistsAndUpdateOffloadMMprojSetting(
     modelId: string,
     updateProvider?: (

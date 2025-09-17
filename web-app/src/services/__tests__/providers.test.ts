@@ -45,6 +45,7 @@ vi.mock('@janhq/core', () => ({
               ])
             ),
             isToolSupported: vi.fn(() => Promise.resolve(false)),
+            isEmbeddingsSupported: vi.fn(() => Promise.resolve(false)),            
             getSettings: vi.fn(() =>
               Promise.resolve([
                 {

@@ -68,6 +68,9 @@ pub async fn load_llama_model<R: Runtime>(
 
     let model_id = extract_arg_value(&args, "-a");
 
+    let pooling_mode = extract_arg_value(&args, "--pooling");
+    log::info!("Using arguments for pooling: {}", pooling_mode);
+
     // Configure the command to run the server
     let mut command = Command::new(backend_path);
     command.args(args);

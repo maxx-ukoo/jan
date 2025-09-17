@@ -34,6 +34,7 @@ describe('DefaultModelsService', () => {
     load: vi.fn(),
     isModelSupported: vi.fn(),
     isToolSupported: vi.fn(),
+    isEmbeddingsSupported: vi.fn(),
     checkMmprojExists: vi.fn(),
   }
 

@@ -322,6 +322,13 @@ export class DefaultModelsService implements ModelsService {
     return engine.isToolSupported(modelId)
   }
 
+  async isEmbeddingsSupported(modelId: string): Promise<boolean> {
+    const engine = this.getEngine()
+    if (!engine) return false
+
+    return engine.isEmbeddingsSupported(modelId)
+  }
+
   async checkMmprojExistsAndUpdateOffloadMMprojSetting(
     modelId: string,
     updateProvider?: (

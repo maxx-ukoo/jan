@@ -34,41 +34,53 @@ export class WebProvidersService implements ProvidersService {
             controller_props: setting.controllerProps as unknown,
           }
         }) as ProviderSetting[],
-        models: await Promise.all(
-          models.map(
-            async (model) =>
-              ({
-                id: model.id,
-                model: model.id,
-                name: model.name,
-                description: model.description,
-                capabilities:
-                  'capabilities' in model
-                    ? (model.capabilities as string[])
-                    : (await value.isToolSupported(model.id))
-                      ? [ModelCapabilities.TOOLS]
-                      : [],
-                provider: providerName,
-                settings: Object.values(modelSettings).reduce(
-                  (acc, setting) => {
-                    let value = setting.controller_props.value
-                    if (setting.key === 'ctx_len') {
-                      value = 8192 // Default context length for Llama.cpp models
-                    }
-                    acc[setting.key] = {
-                      ...setting,
-                      controller_props: {
-                        ...setting.controller_props,
-                        value: value,
-                      },
-                    }
-                    return acc
+        models: await (async () => {
+          const result: Model[] = []
+
+          for (const model of models) {
+            const capabilities: string[] = []
+
+            if ('capabilities' in model) {
+              capabilities.push(...(model.capabilities as string[]))
+            } else {
+              const [embeddingSupported, toolSupported] = await Promise.all([
+                value.isEmbeddingsSupported(model.id),
+                value.isToolSupported(model.id),
+              ])
+
+              if (toolSupported) capabilities.push(ModelCapabilities.TOOLS)
+              if (embeddingSupported) capabilities.push(ModelCapabilities.EMBEDDINGS)
+            }
+
+            const modelObj: Model = {
+              id: model.id,
+              model: model.id,
+              name: model.name,
+              description: model.description,
+              capabilities,
+              provider: providerName,
+              settings: Object.values(modelSettings).reduce((acc, setting) => {
+                let value = setting.controller_props.value
+                if (setting.key === 'ctx_len') {
+                  value = 8192
+                }
+                acc[setting.key] = {
+                  ...setting,
+                  controller_props: {
+                    ...setting.controller_props,
+                    value,
                   },
-                  {} as Record<string, ProviderSetting>
-                ),
-              }) as Model
-          )
-        ),
+                }
+                return acc
+              }, {} as Record<string, ProviderSetting>),
+            }
+
+            result.push(modelObj)
+          }
+
+          return result
+        })(),
+
       }
       runtimeProviders.push(provider)
     }

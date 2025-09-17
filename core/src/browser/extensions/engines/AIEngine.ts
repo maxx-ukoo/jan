@@ -282,4 +282,10 @@ export abstract class AIEngine extends BaseExtension {
    * @param modelId
    */
   abstract isToolSupported(modelId: string): Promise<boolean>
+
+    /**
+   * Check if a embedding is supported by the model
+   * @param modelId
+   */
+  abstract isEmbeddingsSupported(modelId: string): Promise<boolean>
 }

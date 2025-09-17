@@ -1413,6 +1413,10 @@ export default class llamacpp_extension extends AIEngine {
     if (sInfo) {
       throw new Error('Model already loaded!!')
     }
+    var embeddingsFeature = await this.isEmbeddingsSupported(modelId)
+    embeddingsFeature = true
+    logger.info(`=============> load started witn embeddings: ${isEmbedding}`)
+    logger.info(`=============> load started witn embeddingsFeature: ${embeddingsFeature}`)
 
     // If this model is already being loaded, return the existing promise
     if (this.loadingModels.has(modelId)) {
@@ -1423,7 +1427,7 @@ export default class llamacpp_extension extends AIEngine {
     const loadingPromise = this.performLoad(
       modelId,
       overrideSettings,
-      isEmbedding
+      embeddingsFeature
     )
     this.loadingModels.set(modelId, loadingPromise)
 
@@ -1441,6 +1445,7 @@ export default class llamacpp_extension extends AIEngine {
     isEmbedding: boolean = false
   ): Promise<SessionInfo> {
     const loadedModels = await this.getLoadedModels()
+    logger.info(`=============> performLoad started witn embeddings: ${isEmbedding}`)
 
     // Get OTHER models that are currently loading (exclude current model)
     const otherLoadingPromises = Array.from(this.loadingModels.entries())
@@ -1551,10 +1556,11 @@ export default class llamacpp_extension extends AIEngine {
     args.push('--no-mmap')
     if (cfg.mlock) args.push('--mlock')
     if (cfg.no_kv_offload) args.push('--no-kv-offload')
-    if (isEmbedding) {
-      args.push('--embedding')
-      args.push('--pooling mean')
-    } else {
+    //if (isEmbedding) { 
+      args.push('--embeddings')
+      args.push('--pooling')
+      args.push('mean')
+    //} else {
       if (cfg.ctx_size > 0) args.push('--ctx-size', String(cfg.ctx_size))
       if (cfg.n_predict > 0) args.push('--n-predict', String(cfg.n_predict))
       if (cfg.cache_type_k && cfg.cache_type_k != 'f16')
@@ -1577,7 +1583,7 @@ export default class llamacpp_extension extends AIEngine {
         args.push('--rope-freq-base', String(cfg.rope_freq_base))
       if (cfg.rope_freq_scale && cfg.rope_freq_scale != 1)
         args.push('--rope-freq-scale', String(cfg.rope_freq_scale))
-    }
+    //}
 
     logger.info('Calling Tauri command llama_load with args:', args)
     const backendPath = await getBackendExePath(backend, version)
@@ -1984,10 +1990,51 @@ export default class llamacpp_extension extends AIEngine {
       janDataFolderPath,
       modelConfig.model_path,
     ])
+
     return (await readGgufMetadata(modelPath)).metadata?.[
       'tokenizer.chat_template'
     ]?.includes('tools')
   }
+
+    /**
+   * Check if a embeddings is supported by the model
+   * Currently read from GGUF metadata
+   * @param modelId
+   * @returns
+   */
+  async isEmbeddingsSupported(modelId: string): Promise<boolean> {
+    const janDataFolderPath = await getJanDataFolderPath()
+    const modelConfigPath = await joinPath([
+      this.providerPath,
+      'models',
+      modelId,
+      'model.yml',
+    ])
+    const modelConfig = await invoke<ModelConfig>('read_yaml', {
+      path: modelConfigPath,
+    })
+    // model option is required
+    // NOTE: model_path and mmproj_path can be either relative to Jan's data folder or absolute path
+    const modelPath = await joinPath([
+      janDataFolderPath,
+      modelConfig.model_path,
+    ])
+
+    const gguf = await readGgufMetadata(modelPath)
+    
+    logger.info(
+      `Check for embeddings: ${gguf.metadata['general.tags']} `
+    )
+
+    const result = (await readGgufMetadata(modelPath)).metadata?.[
+      'general.tags'
+    ]?.includes('text-embeddings-inference')
+    logger.info(
+      `Embeddings supported: ${result} `
+    )
+    return result;
+  }
+
   /**
    * Get total system memory including both VRAM and RAM
    */

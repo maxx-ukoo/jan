@@ -200,29 +200,22 @@ export const DialogEditModel = ({
               />
             </div>
 
-            {/* <div className="flex items-center justify-between">
+            <div className="flex items-center justify-between">
               <div className="flex items-center space-x-2">
-                <IconCodeCircle2 className="size-4 text-main-view-fg/70" />
+                <IconEye className="size-4 text-main-view-fg/70" />
                 <span className="text-sm">
                   {t('providers:editModel.embeddings')}
                 </span>
               </div>
-              <Tooltip>
-                <TooltipTrigger>
                   <Switch
                     id="embedding-capability"
-                    disabled={true}
                     checked={capabilities.embeddings}
                     onCheckedChange={(checked) =>
                       handleCapabilityChange('embeddings', checked)
                     }
                   />
-                </TooltipTrigger>
-                <TooltipContent>
-                  {t('providers:editModel.notAvailable')}
-                </TooltipContent>
-              </Tooltip>
-            </div> */}
+           
+            </div>
 
             {/* <div className="flex items-center justify-between">
               <div className="flex items-center space-x-2">
